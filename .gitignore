@@ -1,0 +1,4 @@
+**/.vagrant
+**/fixtures
+pe-vagrant/*.tar.gz
+pe-vagrant/.pe_build
