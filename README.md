@@ -2,4 +2,5 @@
 Useful Vagrant boxes and Docker images.
 
 ### TODO
-- Ansible Tower Image
+- vagrant cleanup utilites
+- docker cleanup notes

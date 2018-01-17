@@ -1,5 +1,5 @@
 # enable jenkins repo
-cp /vagrant/jenkins.repo /etc/yum.repos.d/jenkins.repo
+curl -L https://pkg.jenkins.io/redhat-stable/jenkins.repo -o /etc/yum.repos.d/jenkins.repo
 rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 # install git, java, jenkins, ansible, and docker
 dnf install -y git java-1.8.0-openjdk jenkins ansible docker
@@ -13,7 +13,7 @@ systemctl start jenkins; sleep 10
 # retrieve and push update center data
 curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack
 # install plugins ('docker-pipeline' is installed as a pipeline dep; workflow-aggregator is the actual name of pipeline)
-java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://127.0.0.1:8080 install-plugin workflow-aggregator blueocean ansible pipeline-utility-steps
+java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 install-plugin workflow-aggregator blueocean ansible pipeline-utility-steps
 # restart jenkins with plugins and changed password
 systemctl restart jenkins; sleep 10
 echo 'Need to configure plugins from within Global Tool Configuration in the GUI!'
