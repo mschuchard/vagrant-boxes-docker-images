@@ -1,10 +1,9 @@
 # BEGIN SETUP
-# store bools for efficiency
+# store vars for efficiency
 windows = Vagrant::Util::Platform.windows?
-cygwin = Vagrant::Util::Platform.cygwin?
 
 # BEGIN ALWAYS EXECUTED
-raise 'Vagrant requires Cygwin or WSL if on Windows.' if windows && (!cygwin || !Vagrant::Util::Platform.wsl?)
+raise 'Vagrant requires Cygwin or WSL if on Windows.' if windows && (!Vagrant::Util::Platform.cygwin? || !Vagrant::Util::Platform.wsl?)
 
 # Vagrant version checking
 Vagrant.require_version '>= 1.7.4'
@@ -29,7 +28,7 @@ end
 def plugins_install(plugins)
   installed = false
   # cygwin is the one supported platform with no sudo
-  sudo = cygwin ? '' : 'sudo'
+  sudo = Vagrant::Util::Platform.cygwin? ? '' : 'sudo'
 
   plugins.each do |plugin|
     next if Vagrant.has_plugin?(plugin)

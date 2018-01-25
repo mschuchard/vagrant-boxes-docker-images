@@ -1,0 +1,13 @@
+require_relative '../vagrant/vagrant_utilities'
+
+Vagrant.configure('2') do |config|
+  config.vm.box = 'debian/stretch64'
+
+  config.vm.provider 'virtualbox' do |vb|
+    vb.cpus = '4'
+    vb.memory = '2048'
+  end
+
+  config.vm.provision 'shell', inline: 'apt-get update && apt-get install -y python3-pip'
+  config.vm.provision 'shell', inline: 'pip3 install numpy scipy scikit-learn matplotlib pandas tensorflow'
+end
