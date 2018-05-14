@@ -1,0 +1,4 @@
+dockervers: 17.06.2
+minikubevers:
+  majmin: 0.26
+  patch: 1

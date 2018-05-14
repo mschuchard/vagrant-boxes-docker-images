@@ -1,0 +1,58 @@
+---
+- name: bootstrap a debian minikube vagrant box
+  hosts: all
+  connection: local
+  become: true
+  vars_files:
+  - vars.yml
+
+  tasks:
+  - name: install dependencies for docker and kubernetes
+    apt:
+      name: "{{item}}"
+      state: installed
+    with_items:
+    - apt-transport-https
+    - dirmngr
+
+  - name: add docker and kubernetes apt gpg keys
+    apt_key:
+      url: "{{item}}"
+      state: present
+    with_items:
+    - https://download.docker.com/linux/debian/gpg
+    - https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+  - name: add docker and kubernetes apt repos
+    apt_repository:
+      repo: "{{item}}"
+      state: present
+    with_items:
+    - deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
+    - deb http://apt.kubernetes.io/ kubernetes-stretch main
+
+  - name: install docker and kubectl
+    apt:
+      name: "{{item}}"
+      state: installed
+    with_items:
+    - "docker-ce={{dockervers}}~ce-0~debian"
+    - kubectl
+
+  - name: grab and install minikube package
+    apt:
+      deb: "https://github.com/kubernetes/minikube/releases/download/v{{minikubevers.majmin}}.{{minikubevers.patch}}/minikube_{{minikubevers.majmin}}-{{minikubevers.patch}}.deb"
+      state: installed
+
+  - name: initialize minikube
+    command: minikube start --vm-driver=none
+    environment:
+      CHANGE_MINIKUBE_NONE_USER: true
+
+  - name: capture dashboard port
+    command: minikube dashboard --url
+    register: md_url
+
+  - name: display dashbaord url
+    debug:
+      var: md_url.stdout_lines
