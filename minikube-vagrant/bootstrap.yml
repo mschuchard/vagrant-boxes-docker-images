@@ -31,28 +31,48 @@
     - deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
     - deb http://apt.kubernetes.io/ kubernetes-stretch main
 
-  - name: install docker and kubectl
+  - name: install docker, kubectl, and socat (needed for helm)
     apt:
       name: "{{item}}"
       state: installed
     with_items:
     - "docker-ce={{dockervers}}~ce-0~debian"
     - kubectl
+    - socat
 
   - name: grab and install minikube package
     apt:
       deb: "https://github.com/kubernetes/minikube/releases/download/v{{minikubevers.majmin}}.{{minikubevers.patch}}/minikube_{{minikubevers.majmin}}-{{minikubevers.patch}}.deb"
       state: installed
 
-  - name: initialize minikube
-    command: minikube start --vm-driver=none
+  - name: initialize minikube using driver for docker and vagrant hostname/ip
+    command: minikube start --vm-driver=none --apiserver-names=kubernetes.local --apiserver-ips=192.168.88.88
     environment:
       CHANGE_MINIKUBE_NONE_USER: true
+
+  - name: give minikube some time to actually come up
+    command: sleep 10
 
   - name: capture dashboard port
     command: minikube dashboard --url
     register: md_url
 
-  - name: display dashbaord url
+  - name: display dashboard url
     debug:
       var: md_url.stdout_lines
+
+  - name: capture cert info
+    command: "cat /root/.minikube/{{item}}"
+    register: "{{item}}_contents"
+    with_items:
+    - ca.crt
+    - client.crt
+    - client.key
+
+  - name: display cert info
+    debug:
+      var: "{{item}}_contents.stdout"
+    with_items:
+    - ca.crt
+    - client.crt
+    - client.key
