@@ -1,0 +1,8 @@
+---
+- name: bootstrap a vagrant box with elastic stack
+  hosts: all
+  connection: local
+  become: true
+  vars:
+  roles:
+  - { role: elasticsearch, es_instance_name: node1 }

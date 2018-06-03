@@ -1,0 +1,21 @@
+require_relative '../vagrant/vagrant_utilities'
+
+Vagrant.configure('2') do |config|
+  config.vm.box = 'ubuntu/xenial64'
+  config.vm.network 'private_network', ip: '192.168.123.45'
+  config.vm.hostname = 'elastic.local'
+
+  config.vm.provider 'virtualbox' do |vb|
+    vb.cpus = '2'
+    vb.memory = '2048'
+  end
+
+  # bootstrap box
+  config.vm.provision 'ansible_local' do |ansible|
+    ansible.playbook = 'pre-bootstrap.yml'
+  end
+  # role does not actually work at current version
+  config.vm.provision 'ansible_local' do |ansible|
+    ansible.playbook = 'bootstrap.yml'
+  end
+end

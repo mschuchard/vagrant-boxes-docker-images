@@ -1,0 +1,19 @@
+---
+- name: setup elasticsearch role for usage
+  hosts: all
+  connection: local
+  become: true
+  tasks:
+  - name: check if role is downloaded
+    stat:
+      path: /vagrant/roles/elasticsearch
+    register: elastic_role
+
+  - name: create roles dir
+    file:
+      state: directory
+      path: /vagrant/roles
+
+  - name: install elasticsearch role
+    command: ansible-galaxy install --roles-path /vagrant/roles -r /vagrant/requirements.yml
+    when: not elastic_role.stat.exists
