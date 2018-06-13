@@ -10,5 +10,5 @@
       state: installed
     with_items:
     - httpd
-    - mariadb
+    - mysql-server
     - php

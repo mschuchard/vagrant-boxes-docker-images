@@ -1,18 +1,27 @@
 {
   "variables": {
-    "aws_access_key": "",
-    "aws_secret_key": "",
+    "aws_profile": "default",
+    "aws_ssh_username": "ec2-user",
+    "aws_instance_type": "t2.micro",
     "do_api_token": ""
   },
   "builders": [{
     "type": "amazon-ebs",
-    "access_key": "{{user `aws_access_key`}}",
-    "secret_key": "{{user `aws_secret_key`}}",
+    "profile": "{{user `aws_profile`}}",
     "region": "us-east-1",
     "source_ami": "ami-5679a229",
-    "instance_type": "t2.micro",
-    "ssh_username": "mschuchard",
-    "ami_name": "amazon-lamp"
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "amzn-ami*-ebs",
+        "root-device-type": "ebs"
+      },
+      "owners": ["137112412989", "591542846629", "801119661308", "102837901569", "013907871322", "206029621532", "286198878708", "443319210888"],
+      "most_recent": true
+    },
+    "instance_type": "{{user `aws_instance_type`}}",
+    "ssh_username": "{{user `aws_ssh_username`}}",
+    "ami_name": "amazon-lamp-{{timestamp}}"
   },
   {
     "type": "azure-arm",
@@ -49,15 +58,7 @@
     "snapshot_name": "ubuntu-lamp"
   }],
   "provisioners": [{
-    "type": "puppet-masterless",
-    "manifest_file": "../puppet/ami.pp"
-  },
-  {
-    "type": "ansible-local",
-    "playbook_file": "../ansible/vhd.yml"
-  },
-  {
-    "type": "chef-solo",
-    "cookbook_paths": ["chef"]
+    "type": "ansible",
+    "playbook_file": "ansible/lamp.yml"
   }]
 }
