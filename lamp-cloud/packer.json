@@ -60,5 +60,12 @@
   "provisioners": [{
     "type": "ansible",
     "playbook_file": "ansible/lamp.yml"
+  },
+  {
+    "type": "goss",
+    "version": "0.3.6",
+    "tests": ["goss/packer-goss.yaml"],
+    "goss_file": "packer-goss.yaml",
+    "format": "documentation"
   }]
 }

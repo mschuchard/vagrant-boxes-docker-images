@@ -1,11 +1,6 @@
 package:
-{{if eq .Vars.os "ubuntu"}}
-  apache2:
-    installed: true
-{{else}}
   httpd:
     installed: true
-{{end}}
   mysql-server:
     installed: true
   php:
