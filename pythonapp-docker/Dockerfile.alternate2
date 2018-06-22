@@ -1,0 +1,8 @@
+FROM python:3 AS builder
+COPY . .
+RUN python setup.py sdist && pip install dist/module-0.0.0.tar.gz
+
+FROM python:3-alpine
+COPY --from=builder /root/.cache /root/.cache
+COPY --from=builder dist/module-0.0.0.tar.gz .
+RUN pip install module-0.0.0.tar.gz && rm -rf /root/.cache
