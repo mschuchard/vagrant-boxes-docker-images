@@ -1,33 +1,138 @@
+# TODO:
+# make kubeconfig accessible for others
+# chmod 0755 /home/vagrant
+# systemctl start ntpd # needed for github api
+# setup .kube/config and .minikube/ca.crt, client.crt, client.key
+# helm init
+# git clone https://github.com/openfaas/faas-netes
+# cd faas-netes && kubectl apply -f namespaces.yml
+# cd chart && helm upgrade --install openfaas openfaas/ --namespace openfaas --set functionNamespace=openfaas-fn
+# pip install molecule docker
 ---
-- hosts: all
-  become: yes
-  tasks:
-  - name: create jenkins repo conf
-    copy:
-      src: jenkins.repo
-      dest: /etc/yum.repos.d/jenkins.repo
+- name: provision a loaded up jenkins master
+  hosts: all, localhost
+  become: true
+  vars_files:
+  - vars.yml
 
-  - name: add jenkins gpg key
+  tasks:
+  - name: subscribe to jenkins and docker repos
+    get_url:
+      url: https://{{item.value.url}}
+      dest: /etc/yum.repos.d/{{item.key}}.repo
+    with_dict:
+      jenkins:
+        url: pkg.jenkins.io/redhat-stable/jenkins.repo
+      docker:
+        url: download.docker.com/linux/fedora/docker-ce.repo
+
+  - name: import jenkins gpg key
     rpm_key:
       state: present
       key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 
-  - name: install java and jenkins
+  - name: install required system packages
     package:
-      name: "{{ item }}"
-      state: present
+      name: "{{item}}"
+      state: installed
     with_items:
+    - git
     - java-1.8.0-openjdk
     - jenkins
+    - ansible
+    - docker-ce-17.06.2.ce
+    - ntpd # for library retreival not hitting github rate limits
+    - unzip # for hashi installs
 
-  - name: start jenkins
+  - name: create docker group
+    group:
+      name: docker
+      state: present
+
+  - name: add jenkins user to docker group
+    user:
+      name: jenkins
+      groups: docker
+
+  - name: restart docker to recognize jenkins user
+    service:
+      name: docker
+      state: restarted
+
+  - name: disable setup wizard
+# sed -ir 's/^JENKINS_JAVA_OPTIONS=.*/JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"/' /etc/sysconfig/jenkins
+
+  - name: start jenkins to install plugins
     service:
       name: jenkins
-      enabled: yes
       state: started
+      enabled: true
 
   - name: wait for jenkins to come up
-    command: sleep 3
+    command: sleep 10
 
-  - name: output password file for admin
-    command: cat {{ /var/lib/jenkins/secrets/initialAdminPassword | quote }}
+  - name: update plugin metadata
+    command: "curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack"
+
+  - name: install plugins # 'docker-pipeline' is installed as a pipeline dep; workflow-aggregator is the actual name of pipeline
+    command: java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 install-plugin {{item}}
+    with_items:
+    - workflow-aggregator
+    - blueocean
+    - ansible
+    - pipeline-utility-steps
+    - aws-credentials
+
+  - name: restart jenkins to pickup plugins # also maybe changed password in case that regression happens
+    service:
+      name: jenkins
+      state: restarted
+
+  - name: wait for jenkins to come up
+    command: sleep 10
+
+  - name: download and unzip software
+    unarchive:
+      src: https://releases.hashicorp.com/{{item.key}}/{{item.value.version}}/{{item.key}}_{{item.value.version}}_{{ansible_system | lower}}_amd64.zip
+      dest: /usr/bin/
+      remote_src: yes
+    with_dict:
+      packer:
+        version: 1.2.4
+      terraform:
+        version: 0.11.7
+
+  - name: download static binaries for goss packer plugin, openfaas cli, and kubectl
+    get_url:
+      url: "{{item.value.url}}"
+      dest: /usr/bin/{{item.key}}
+    with_dict:
+      'packer-provisioner-goss':
+        url: https://github.com/YaleUniversity/packer-provisioner-goss/releases/download/v0.2.1/packer-provisioner-goss-v0.2.1-linux-amd64
+      'faas-cli':
+        url: https://github.com/openfaas/faas-cli/releases/download/0.6.9/faas-cli
+      kubectl:
+        url: https://storage.googleapis.com/kubernetes-release/release/v{{kubectl_version}}/bin/{{ansible_system | lower}}/amd64/kubectl
+
+
+  - name: make those static binaries executable
+    file:
+      path: /usr/bin/{{item}}
+      mode: 0755
+    with_items:
+    - packer-provisioner-goss
+    - faas-cli
+    - kubectl
+
+  - name: download helm tarball and unpack helm
+    unarchive:
+      src: https://storage.googleapis.com/kubernetes-helm/helm-v{{helm_version}}-{{ansible_system | lower}}-amd64.tar.gz
+      dest: /usr/bin/
+      remote_src: yes
+      extra_opts:
+      - '--strip-components'
+      - '1'
+      - "{{ansible_system | lower}}-amd64/helm"
+
+  - name: helpful output message
+    debug: 'Need to configure plugins, AWS/Docker credentials, and DevOps library in the GUI!'

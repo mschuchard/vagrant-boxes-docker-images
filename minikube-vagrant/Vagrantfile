@@ -11,7 +11,7 @@ Vagrant.configure('2') do |config|
   end
 
   # bootstrap box
-  config.vm.provision 'ansible_local' do |ansible|
+  config.vm.provision :ansible do |ansible|
     ansible.playbook = 'bootstrap.yml'
   end
 end

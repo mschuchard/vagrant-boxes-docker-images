@@ -1,7 +1,6 @@
 ---
 - name: bootstrap a debian minikube vagrant box
-  hosts: all
-  connection: local
+  hosts: all, localhost
   become: true
   vars_files:
   - vars.yml
