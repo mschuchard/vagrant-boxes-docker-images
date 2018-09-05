@@ -4,13 +4,13 @@
 # Dependency and config checks
 require_relative '../vagrant/vagrant_utilities'
 
-raise 'Missing PE Master tarball.' if Dir.glob('puppet-enterprise-2018-*-el-7-x86_64.tar.gz').empty?
+raise 'Missing PE Master tarball.' if Dir.glob('puppet-enterprise-2018.1.?-el-7-x86_64.tar.gz').empty?
 
 plugins_install(%w[vagrant-pe_build])
 
 # Configure boxes
 Vagrant.configure('2') do |config|
-  config.pe_build.version = '2018.1.3'
+  config.pe_build.version = '2018.1.4'
   config.vm.box = 'centos/7'
   config.pe_build.download_root = "file://#{Dir.pwd}"
   config.ssh.insert_key = false
