@@ -37,11 +37,11 @@
       state: installed
     with_items:
     - git
-    - java-1.8.0-openjdk
+    - java-{{java_version}}-openjdk
     - jenkins
     - ansible
-    - docker-ce-17.06.2.ce
-    - ntpd # for library retreival not hitting github rate limits
+    - docker-ce-{{docker_version}}.ce
+    - ntp # for library retreival not hitting github rate limits
     - unzip # for hashi installs
 
   - name: create docker group
@@ -60,20 +60,27 @@
       state: restarted
 
   - name: disable setup wizard
-# sed -ir 's/^JENKINS_JAVA_OPTIONS=.*/JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"/' /etc/sysconfig/jenkins
+    lineinfile:
+      path: /etc/sysconfig/jenkins
+      regexp: '^JENKINS_JAVA_OPTIONS=.*'
+      line: 'JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
 
-  - name: start jenkins to install plugins
+  - name: start jenkins to install plugins and ntpd for github api rate limits
     service:
-      name: jenkins
+      name: "{{item}}"
       state: started
       enabled: true
+    with_items:
+    - jenkins
+    - ntpd
 
   - name: wait for jenkins to come up
     command: sleep 10
 
-  - name: update plugin metadata
-    command: "curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack"
+  #- name: update plugin metadata
+  #  command: "curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack"
 
+  # TODO: not idempotent
   - name: install plugins # 'docker-pipeline' is installed as a pipeline dep; workflow-aggregator is the actual name of pipeline
     command: java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 install-plugin {{item}}
     with_items:
@@ -98,9 +105,9 @@
       remote_src: yes
     with_dict:
       packer:
-        version: 1.2.5
+        version: "{{packer_version}}"
       terraform:
-        version: 0.11.7
+        version: "{{terraform_version}}"
 
   - name: download static binaries for goss packer plugin, openfaas cli, and kubectl
     get_url:
@@ -108,9 +115,9 @@
       dest: /usr/bin/{{item.key}}
     with_dict:
       'packer-provisioner-goss':
-        url: https://github.com/YaleUniversity/packer-provisioner-goss/releases/download/v0.2.1/packer-provisioner-goss-v0.2.1-linux-amd64
+        url: https://github.com/YaleUniversity/packer-provisioner-goss/releases/download/v{{packer_goss_version}}/packer-provisioner-goss-v{{packer_goss_version}}-linux-amd64
       'faas-cli':
-        url: https://github.com/openfaas/faas-cli/releases/download/0.6.9/faas-cli
+        url: https://github.com/openfaas/faas-cli/releases/download/{{faas_version}}/faas-cli
       kubectl:
         url: https://storage.googleapis.com/kubernetes-release/release/v{{kubectl_version}}/bin/{{ansible_system | lower}}/amd64/kubectl
 
@@ -134,5 +141,7 @@
       - '1'
       - "{{ansible_system | lower}}-amd64/helm"
 
+  # TODO: ansible fails at outputting this
   - name: helpful output message
-    debug: 'Need to configure plugins, AWS/Docker credentials, and DevOps library in the GUI!'
+    debug:
+    msg: 'Need to configure plugins, AWS/Docker credentials, and DevOps library in the GUI!'
