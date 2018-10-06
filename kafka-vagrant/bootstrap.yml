@@ -1,0 +1,50 @@
+#TODO: backgrounding and dynamic conditionals do not work in ansible
+---
+- name: bootstrap an ubuntu kafka vagrant box
+  hosts: all, localhost
+  become: true
+  vars_files:
+  - vars.yml
+
+  tasks:
+  - name: install java as dependency
+    package:
+      name: default-jre
+      state: present
+
+  - name: download and untar kafka
+    unarchive:
+      src: http://www-us.apache.org/dist/kafka/{{kafka_version}}/kafka_{{scala_version}}-{{kafka_version}}.tgz
+      dest: /home/vagrant
+      remote_src: true
+      extra_opts:
+      - '--strip-components'
+      - '1'
+      - "kafka_{{scala_version}}-{{kafka_version}}"
+
+  - name: check if zookeeper and kafka running
+    command: ps ax
+    register: pstable
+
+  - name: start a single node zookeeper instance in the background
+    command: nohup /home/vagrant/bin/zookeeper-server-start.sh /home/vagrant/config/zookeeper.properties &
+    async: 20
+    poll: 0
+    when: not pstable.stdout | regex_search('zookeeper.properties')
+
+  - name: start a kafka server instance in the background
+    command: nohup /home/vagrant/bin/kafka-server-start.sh /home/vagrant/config/server.properties &
+    async: 20
+    poll: 0
+    when: not pstable.stdout | regex_search('server\.properties')
+
+  - name: check on topics
+    command: /home/vagrant/bin/kafka-topics.sh --list --zookeeper localhost:2181
+    register: topics
+
+  - name: create a topic
+    command: /home/vagrant/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor {{item.value.replicas}} --partitions {{item.value.partitions}} --topic {{item.key}}
+    async: 20
+    poll: 0
+    when: not topics.stdout | regex_search("{{item.key}}")
+    with_dict: "{{topics}}"

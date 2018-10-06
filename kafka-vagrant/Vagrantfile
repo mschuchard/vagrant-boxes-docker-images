@@ -1,0 +1,18 @@
+require_relative '../vagrant/vagrant_utilities'
+
+Vagrant.configure('2') do |config|
+  config.vm.box = 'ubuntu/bionic64'
+  config.vm.network 'private_network', ip: '192.168.11.111'
+  config.vm.hostname = 'kafka.local'
+
+  config.vm.provider 'virtualbox' do |vb|
+    vb.cpus = '2'
+    vb.memory = '2048'
+  end
+
+  # bootstrap box
+  config.vm.provision :ansible do |ansible|
+    ansible.playbook = 'bootstrap.yml'
+    ansible.extra_vars = { ansible_python_interpreter: '/usr/bin/python3' }
+  end
+end
