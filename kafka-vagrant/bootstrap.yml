@@ -1,4 +1,5 @@
 #TODO: backgrounding and dynamic conditionals do not work in ansible
+#TODO: improve the 0-2 array crap into a var with like "counts" kind of thing
 ---
 - name: bootstrap an ubuntu kafka vagrant box
   hosts: all, localhost
@@ -22,6 +23,16 @@
       - '1'
       - "kafka_{{scala_version}}-{{kafka_version}}"
 
+  - name: create server.properties for multi-broker kafka
+    template:
+      src: server.properties.j2
+      dest: /home/vagrant/config/server-{{item}}.properties
+      mode: '0666'
+    with_items:
+    - 0
+    - 1
+    - 2
+
   - name: check if zookeeper and kafka running
     command: ps ax
     register: pstable
@@ -32,11 +43,15 @@
     poll: 0
     when: not pstable.stdout | regex_search('zookeeper.properties')
 
-  - name: start a kafka server instance in the background
-    command: nohup /home/vagrant/bin/kafka-server-start.sh /home/vagrant/config/server.properties &
+  - name: start kafka server instances in the background
+    command: nohup /home/vagrant/bin/kafka-server-start.sh /home/vagrant/config/server-{{item}}.properties &
     async: 20
     poll: 0
-    when: not pstable.stdout | regex_search('server\.properties')
+    #when: not pstable.stdout | regex_search("server-{{item}}\.properties")
+    with_items:
+    - 0
+    - 1
+    - 2
 
   - name: check on topics
     command: /home/vagrant/bin/kafka-topics.sh --list --zookeeper localhost:2181
@@ -44,7 +59,5 @@
 
   - name: create a topic
     command: /home/vagrant/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor {{item.value.replicas}} --partitions {{item.value.partitions}} --topic {{item.key}}
-    async: 20
-    poll: 0
-    when: not topics.stdout | regex_search("{{item.key}}")
+    #when: not topics.stdout | regex_search("{{item.key}}")
     with_dict: "{{topics}}"
