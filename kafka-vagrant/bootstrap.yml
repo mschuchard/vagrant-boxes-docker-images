@@ -1,5 +1,4 @@
-#TODO: backgrounding and dynamic conditionals do not work in ansible
-#TODO: improve the 0-2 array crap into a var with like "counts" kind of thing
+#TODO: dynamic conditionals do not work in ansible; bug in ansible prevents with_sequence passed into jinja2; bug in ansible is not accessing values in with_dict
 ---
 - name: bootstrap an ubuntu kafka vagrant box
   hosts: all, localhost
@@ -26,8 +25,9 @@
   - name: create server.properties for multi-broker kafka
     template:
       src: server.properties.j2
-      dest: /home/vagrant/config/server-{{item}}.properties
+      dest: /home/vagrant/config/server-{{item|string}}.properties
       mode: '0666'
+    #with_sequence: start=0 end={{kafkas - 1}}
     with_items:
     - 0
     - 1
@@ -38,20 +38,17 @@
     register: pstable
 
   - name: start a single node zookeeper instance in the background
-    command: nohup /home/vagrant/bin/zookeeper-server-start.sh /home/vagrant/config/zookeeper.properties &
+    shell: nohup /home/vagrant/bin/zookeeper-server-start.sh /home/vagrant/config/zookeeper.properties &
     async: 20
     poll: 0
     when: not pstable.stdout | regex_search('zookeeper.properties')
 
   - name: start kafka server instances in the background
-    command: nohup /home/vagrant/bin/kafka-server-start.sh /home/vagrant/config/server-{{item}}.properties &
+    shell: nohup /home/vagrant/bin/kafka-server-start.sh /home/vagrant/config/server-{{item|string}}.properties &
     async: 20
     poll: 0
     #when: not pstable.stdout | regex_search("server-{{item}}\.properties")
-    with_items:
-    - 0
-    - 1
-    - 2
+    with_sequence: start=0 end={{kafkas - 1}}
 
   - name: check on topics
     command: /home/vagrant/bin/kafka-topics.sh --list --zookeeper localhost:2181
