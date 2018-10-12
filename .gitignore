@@ -4,3 +4,4 @@ pe-vagrant/*.tar.gz
 pe-vagrant/.pe_build
 **/.terraform
 **/terraform.tfstate*
+**/*.log

@@ -1,4 +1,4 @@
-dockervers: 17.06.2
+dockervers: 17.12.1
 minikubevers:
-  majmin: 0.26
-  patch: 1
+  majmin: 0.30
+  patch: 0
