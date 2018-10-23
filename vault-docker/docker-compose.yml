@@ -1,0 +1,14 @@
+version: '3'
+services:
+  vault:
+    image: vault
+    container_name: vault
+    volumes:
+      - ./file:/vault/file:rw
+      - ./config:/vault/config:rw
+    cap_add:
+      - IPC_LOCK
+    command:
+      - vault
+      - server
+      - '-config=/vault/config/vault.json'
