@@ -37,5 +37,5 @@ def plugins_install(plugins)
     installed = true
   end
 
-  exit 0 if installed
+  exec "vagrant #{ARGV.join(' ')}" if installed
 end

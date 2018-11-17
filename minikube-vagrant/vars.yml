@@ -1,4 +1,5 @@
-dockervers: 17.12.1
+dockervers: '17.12.1'
 minikubevers:
-  majmin: 0.30
-  patch: 0
+  majmin: '0.30'
+  patch: '0'
+kubevers: '1.10.10'

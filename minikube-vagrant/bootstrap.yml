@@ -45,20 +45,19 @@
       state: installed
 
   - name: initialize minikube using driver for docker and vagrant hostname/ip
-    command: minikube start --vm-driver=none --apiserver-names=kubernetes.local --apiserver-ips=192.168.88.88
+    command: minikube start --vm-driver=none --apiserver-names=kubernetes.local --apiserver-ips=192.168.88.88 --kubernetes-version=v{{kubevers}}
+    #--network-plugin=cni \
+    #--container-runtime=containerd \
+    #--bootstrapper=kubeadm
     environment:
       CHANGE_MINIKUBE_NONE_USER: true
 
   - name: give minikube some time to actually come up
     command: sleep 10
 
-  - name: capture dashboard port
-    command: minikube dashboard --url
-    register: md_url
-
-  - name: display dashboard url
-    debug:
-      var: md_url.stdout_lines
+    # TODO: replace with nodeport type instead of clusterip: https://github.com/kubernetes/dashboard/wiki/Accessing-Dashboard---1.7.X-and-above#nodeport
+  - name: instantiate and proxy minikube dashboard
+    command: nohup minikube dashboard &; nohup kubectl proxy &
 
   - name: capture cert info
     command: "cat /root/.minikube/{{item}}"
