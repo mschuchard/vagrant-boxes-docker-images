@@ -28,7 +28,7 @@
       state: present
     with_items:
     - deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
-    - deb http://apt.kubernetes.io/ kubernetes-stretch main
+    - deb http://apt.kubernetes.io/ kubernetes-xenial main # kubectl not being updated for debian 9
 
   - name: install docker, kubectl, and socat (needed for helm)
     apt:
@@ -54,6 +54,9 @@
 
   - name: give minikube some time to actually come up
     command: sleep 10
+
+  - name: initialize nginx ingress-controller
+    command: minikube addons enable ingress
 
     # TODO: replace with nodeport type instead of clusterip: https://github.com/kubernetes/dashboard/wiki/Accessing-Dashboard---1.7.X-and-above#nodeport
   - name: instantiate and proxy minikube dashboard

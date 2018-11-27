@@ -1,4 +1,5 @@
-version: '3'
+# TODO: add consul, convert vault.json to hcl
+version: '3.5'
 services:
   vault:
     image: vault
