@@ -2,4 +2,5 @@ dockervers: '17.12.1'
 minikubevers:
   majmin: '0.30'
   patch: '0'
-kubevers: '1.10.10'
+kubevers: '1.12.3'
+helm_version: '2.11.0'

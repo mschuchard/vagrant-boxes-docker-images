@@ -8,11 +8,10 @@
   tasks:
   - name: install dependencies for docker and kubernetes
     apt:
-      name: "{{item}}"
-      state: installed
-    with_items:
-    - apt-transport-https
-    - dirmngr
+      name:
+      - apt-transport-https
+      - dirmngr
+      state: present
 
   - name: add docker and kubernetes apt gpg keys
     apt_key:
@@ -32,17 +31,26 @@
 
   - name: install docker, kubectl, and socat (needed for helm)
     apt:
-      name: "{{item}}"
-      state: installed
-    with_items:
-    - "docker-ce={{dockervers}}~ce-0~debian"
-    - kubectl
-    - socat
+      name:
+      - "docker-ce={{dockervers}}~ce-0~debian"
+      - "kubectl={{kubevers}}-00"
+      - socat
+      state: present
+
+  - name: download helm tarball and unpack helm
+    unarchive:
+      src: https://storage.googleapis.com/kubernetes-helm/helm-v{{helm_version}}-{{ansible_system | lower}}-amd64.tar.gz
+      dest: /usr/bin/
+      remote_src: true
+      extra_opts:
+      - '--strip-components'
+      - '1'
+      - "{{ansible_system | lower}}-amd64/helm"
 
   - name: grab and install minikube package
     apt:
       deb: "https://github.com/kubernetes/minikube/releases/download/v{{minikubevers.majmin}}.{{minikubevers.patch}}/minikube_{{minikubevers.majmin}}-{{minikubevers.patch}}.deb"
-      state: installed
+      state: present
 
   - name: initialize minikube using driver for docker and vagrant hostname/ip
     command: minikube start --vm-driver=none --apiserver-names=kubernetes.local --apiserver-ips=192.168.88.88 --kubernetes-version=v{{kubevers}}
@@ -59,8 +67,14 @@
     command: minikube addons enable ingress
 
     # TODO: replace with nodeport type instead of clusterip: https://github.com/kubernetes/dashboard/wiki/Accessing-Dashboard---1.7.X-and-above#nodeport
-  - name: instantiate and proxy minikube dashboard
-    command: nohup minikube dashboard &; nohup kubectl proxy &
+  - name: instantiate minikube dashboard
+    command: nohup minikube dashboard &
+
+  - name: proxy minikube dashboard
+    command: nohup kubectl proxy &
+
+  - name: initialize helm and install tiller
+    command: helm init
 
   - name: capture cert info
     command: "cat /root/.minikube/{{item}}"
