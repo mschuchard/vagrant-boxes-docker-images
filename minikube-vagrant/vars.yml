@@ -1,6 +1,6 @@
-dockervers: '17.12.1'
+dockervers: '18.03.1'
 minikubevers:
-  majmin: '0.30'
-  patch: '0'
-kubevers: '1.12.3'
-helm_version: '2.11.0'
+  majmin: '0.33'
+  patch: '1'
+kubevers: '1.12.5'
+helm_version: '2.12.3'

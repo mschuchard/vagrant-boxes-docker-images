@@ -33,16 +33,15 @@
 
   - name: install required system packages
     package:
-      name: "{{item}}"
-      state: installed
-    with_items:
-    - git
-    - java-{{java_version}}-openjdk
-    - jenkins
-    - ansible
-    - docker-ce-{{docker_version}}.ce
-    - ntp # for library retreival not hitting github rate limits
-    - unzip # for hashi installs
+      name:
+      - git
+      - java-{{java_version}}-openjdk
+      - jenkins
+      - ansible
+      - docker-ce-{{docker_version}}.ce
+      - ntp # for library retreival not hitting github rate limits
+      - unzip # for hashi installs
+      state: present
 
   - name: create docker group
     group:
@@ -81,7 +80,8 @@
   #  command: "curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack"
 
   # TODO: not idempotent
-  - name: install plugins # 'docker-pipeline' is installed as a pipeline dep; workflow-aggregator is the actual name of pipeline
+  # 'docker-pipeline' is installed as a pipeline dep; workflow-aggregator is the actual name of pipeline
+  - name: install plugins
     command: java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 install-plugin {{item}}
     with_items:
     - workflow-aggregator
@@ -90,7 +90,8 @@
     - pipeline-utility-steps
     - aws-credentials
 
-  - name: restart jenkins to pickup plugins # also maybe changed password in case that regression happens
+  # also maybe changed password in case that regression happens
+  - name: restart jenkins to pickup plugins
     service:
       name: jenkins
       state: restarted
@@ -141,7 +142,6 @@
       - '1'
       - "{{ansible_system | lower}}-amd64/helm"
 
-  # TODO: ansible fails at outputting this
   - name: helpful output message
     debug:
-    msg: 'Need to configure plugins, AWS/Docker credentials, and DevOps library in the GUI!'
+      msg: 'Need to configure plugins, AWS/Docker credentials, and DevOps library in the GUI!'
