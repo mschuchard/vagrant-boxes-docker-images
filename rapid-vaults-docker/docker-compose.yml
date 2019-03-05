@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  cli:
+    build: .
+    image: 'org/rapid-vaults-cli:1.0'
+    container_name: rapid-vaults-cli
+    working_dir: /rapid-vaults
+    volumes:
+      - .:/rapid-vaults
+    entrypoint:
+      - rapid-vaults
+    command:
+      - '--help'
+    healthcheck:
+      test:
+        - CMD
+        - rapid-vaults
+        - '--help'
+      interval: 10s
+      timeout: 2s
+      retries: 5
+  # if and when the api is setup as a server that can be interacted with
+  api:
+    build: .
+    image: 'org/rapid-vaults-api:1.0'
+    container_name: rapid-vaults-api
+    working_dir: /rapid-vaults
+    volumes:
+      - .:/rapid-vaults
+    read_only: true
+    tty: true
+    healthcheck:
+      test:
+        - CMD
+        - rapid-vaults
+        - '--help'
+      interval: 10s
+      timeout: 2s
+      retries: 5
