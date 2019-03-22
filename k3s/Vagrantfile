@@ -3,7 +3,7 @@ require_relative '../vagrant/vagrant_utilities'
 Vagrant.configure('2') do |config|
   config.vm.box = 'debian/stretch64'
 
-  config.vm.define 'master' do |km|
+  config.vm.define 'control' do |km|
     km.vm.network 'private_network', ip: '192.168.33.33'
     km.vm.hostname = 'kubernetes.local'
 
@@ -11,23 +11,19 @@ Vagrant.configure('2') do |config|
       vb.cpus = '4'
       vb.memory = '2048'
     end
-
-    km.vm.provision 'shell', inline: 'curl https://github.com/rancher/k3s/releases/download/v0.2.0/k3s -o /usr/bin/k3s; chmod +x /usr/bin/k3s; sudo k3s server &; cat /var/lib/rancher/k3s/server/node-token; /etc/rancher/k3s/k3s.yaml'
   end
-
-  # bootstrap box
-  #config.vm.provision :ansible do |ansible|
-    #ansible.playbook = 'bootstrap.yml'
-  #end
-  # also need /etc/hosts
 
   (1..3).each do |i|
     config.vm.define "node#{i}" do |node|
       node.vm.network 'private_network', ip: "192.168.33.3#{i + 3}"
       node.vm.hostname = "kubenode#{i}.local"
       node.vm.synced_folder '.', '/vagrant', disabled: true
-
-      node.vm.provision 'shell', inline: 'k3s agent --server https://kubernetes.local:6443 --token ${NODE_TOKEN}'
     end
+  end
+
+  # TODO: this needs to run after all are spun up because the nodes need the registered token from the control
+  config.vm.provision :ansible do |ansible|
+    ansible.playbook = 'bootstrap.yml'
+    ansible.extra_vars = { ansible_python_interpreter: '/usr/bin/python3' }
   end
 end
