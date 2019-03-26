@@ -8,6 +8,9 @@
 # cd faas-netes && kubectl apply -f namespaces.yml
 # cd chart && helm upgrade --install openfaas openfaas/ --namespace openfaas --set functionNamespace=openfaas-fn
 # pip install molecule docker
+# setup pipeline lib
+# setup docker agents
+# convert to using docker images instead of installing pkgs?
 ---
 - name: provision a loaded up jenkins master
   hosts: all, localhost
