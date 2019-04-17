@@ -26,16 +26,26 @@ end
 # BEGIN HELPER METHODS
 # install specified plugins
 def plugins_install(plugins)
-  installed = false
-  # cygwin is the one supported platform with no sudo
-  sudo = Vagrant::Util::Platform.cygwin? ? '' : 'sudo'
+  # native support for plugins in vagrant >= 2.2
+  if Vagrant::VERSION =~ /^2\.[2-9]\./
+    # install missing plugins
+    plugins.each { |plugin| Vagrant::Plugin::Manager.install_plugin(plugin) unless Vagrant::Plugin::Manager.installed_plugins.key?(plugin) }
 
-  plugins.each do |plugin|
-    next if Vagrant.has_plugin?(plugin)
-    system "#{sudo} vagrant plugin install #{plugin}"
-    puts "Rerun vagrant command to recognize installed plugin #{plugin}."
-    installed = true
+    # update plugins
+    Vagrant::Plugin::Manager.update_plugins
+  # homegrown solution
+  else
+    installed = false
+    # cygwin is the one supported platform with no sudo
+    sudo = Vagrant::Util::Platform.cygwin? ? '' : 'sudo'
+
+    plugins.each do |plugin|
+      next if Vagrant.has_plugin?(plugin)
+      system "#{sudo} vagrant plugin instal\l #{plugin}"
+      puts "Rerun vagrant command to recognize installed plugin #{plugin}."
+      installed = true
+    end
+
+    exec "vagrant #{ARGV.join(' ')}" if installed
   end
-
-  exec "vagrant #{ARGV.join(' ')}" if installed
 end
