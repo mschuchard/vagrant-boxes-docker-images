@@ -25,12 +25,12 @@ Vagrant.configure('2') do |config|
       vb.memory = '2560'
     end
 
-    pm.vm.provision 'shell', path: 'base.sh'
-    pm.vm.provision 'shell', path: 'master.sh'
+    pm.vm.provision :shell, path: 'base.sh'
+    pm.vm.provision :shell, path: 'master.sh'
     pm.vm.provision :pe_bootstrap do |pe|
       pe.role = :master
     end
-    pm.vm.provision 'shell', inline: '/opt/puppetlabs/bin/puppet agent -t; exit 0'
+    pm.vm.provision :shell, inline: '/opt/puppetlabs/bin/puppet agent -t; exit 0'
   end
 
   (1..3).each do |i|
@@ -39,11 +39,11 @@ Vagrant.configure('2') do |config|
       node.vm.hostname = "node#{i}"
       node.vm.synced_folder '.', '/vagrant', disabled: true
 
-      node.vm.provision 'shell', path: 'base.sh'
+      node.vm.provision :shell, path: 'base.sh'
       node.vm.provision :pe_agent do |pe|
         pe.master_vm = 'master'
       end
-      node.vm.provision 'shell', inline: 'systemctl disable puppet; systemctl stop puppet'
+      node.vm.provision :shell, inline: 'systemctl disable puppet; systemctl stop puppet'
     end
   end
 end
