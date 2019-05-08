@@ -12,10 +12,10 @@
       state: present
       line: "{{item}}"
     with_items:
-    - "192.168.33.33\tkubernetes.local"
-    - "192.168.33.34\tkubernetes1.local"
-    - "192.168.33.35\tkubernetes2.local"
-    - "192.168.33.36\tkubernetes3.local"
+    - "192.168.33.33\tk3s.local"
+    - "192.168.33.34\tk3snode1.local"
+    - "192.168.33.35\tk3snode2.local"
+    - "192.168.33.36\tk3snode3.local"
 
   - name: retrieve k3s binary
     get_url:
@@ -31,9 +31,10 @@
   - name: tasks for control/master node
     block:
     - name: initialize k3s to setup kubernetes control plane
-      command: nohup k3s server &
+      command: nohup k3s server --kube-apiserver-arg external-hostname={{ansible_fqdn}} --kube-apiserver-arg bind-address={{ansible_eth1.ipv4.address}} --kube-scheduler-arg bind-address={{ansible_eth1.ipv4.address}} --kube-controller-arg bind-address={{ansible_eth1.ipv4.address}} &
       args:
         creates: /etc/rancher/k3s/k3s.yaml
+      poll: 0
 
     - name: download helm tarball and unpack helm
       unarchive:
@@ -55,10 +56,13 @@
       - /var/lib/rancher/k3s/server/node-token
       - /etc/rancher/k3s/k3s.yaml
 
+    # TODO: var name issue; silly "default" used for name everywhere in config; kubectl cannot connect due to k3s bug
     - name: display kubeconfig
       debug:
         var: k3s.yaml_contents.stdout
-    when: inventory_hostname == control
+    when: inventory_hostname == 'control'
 
+    # TODO: connection refused bug in k3s
   - name: join kubernetes work node to control/master
-    command: nohup k3s agent --server https://kubernetes.local:6443 --token {{node-token_contents.stdout}} &
+    command: k3s agent --server https://{{ansible_fqdn}}:6443 --token {{node-token_contents.stdout}}
+    when: inventory_hostname | regex_search('node')
