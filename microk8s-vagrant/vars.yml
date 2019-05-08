@@ -1,0 +1,6 @@
+kube_version: '1.13'
+extensions:
+- dns
+- dashboard
+- storage
+- ingress
