@@ -91,7 +91,8 @@
     - blueocean
     - ansible
     - pipeline-utility-steps
-    - aws-credentials
+    - kubernetes
+    - hashicorp-vault-plugin
 
   # also maybe changed password in case that regression happens
   - name: restart jenkins to pickup plugins
