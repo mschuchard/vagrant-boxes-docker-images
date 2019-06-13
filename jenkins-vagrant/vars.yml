@@ -1,9 +1,9 @@
 # java can be 11 soon
 java_version: 1.8.0
-docker_version: 18.03.1
+docker_version: 18.09.6
 packer_version: 1.3.5
-terraform_version: 0.11.13
+terraform_version: 0.11.14
 packer_goss_version: 0.3.0
 faas_version: 0.8.5
-kubectl_version: 1.12.6
+kubectl_version: 1.13.7
 helm_version: 2.12.3

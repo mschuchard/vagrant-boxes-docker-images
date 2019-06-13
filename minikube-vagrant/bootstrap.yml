@@ -49,7 +49,7 @@
 
   - name: grab and install minikube package
     apt:
-      deb: "https://github.com/kubernetes/minikube/releases/download/v{{minikubevers.majmin}}.{{minikubevers.patch}}/minikube_{{minikubevers.majmin}}-{{minikubevers.patch}}.deb"
+      deb: "https://github.com/kubernetes/minikube/releases/download/v{{minikubevers}}/minikube_{{minikubevers}}.deb"
       state: present
 
   - name: initialize minikube using driver for docker and vagrant hostname/ip

@@ -31,7 +31,7 @@
   - name: tasks for control/master node
     block:
     - name: initialize k3s to setup kubernetes control plane
-      command: nohup k3s server --kube-apiserver-arg external-hostname={{ansible_fqdn}} --kube-apiserver-arg bind-address={{ansible_eth1.ipv4.address}} --kube-scheduler-arg bind-address={{ansible_eth1.ipv4.address}} --kube-controller-arg bind-address={{ansible_eth1.ipv4.address}} &
+      command: nohup k3s server --kube-apiserver-arg external-hostname={{ansible_fqdn}} --bind-address {{ansible_eth1.ipv4.address}} --node-ip {{ansible_eth1.ipv4.address}} --flannel-iface enp0s8 &
       args:
         creates: /etc/rancher/k3s/k3s.yaml
       poll: 0
