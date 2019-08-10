@@ -41,7 +41,7 @@
       - java-{{java_version}}-openjdk
       - jenkins
       - ansible
-      - docker-ce-{{docker_version}}.ce
+      - docker-ce-{{docker_version}}
       - ntp # for library retreival not hitting github rate limits
       - unzip # for hashi installs
       state: present
