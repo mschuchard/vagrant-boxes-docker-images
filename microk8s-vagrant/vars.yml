@@ -1,4 +1,4 @@
-kube_version: '1.13'
+kube_version: '1.14'
 extensions:
 - dns
 - dashboard
