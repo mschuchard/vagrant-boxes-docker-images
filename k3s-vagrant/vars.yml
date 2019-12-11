@@ -1,2 +1,2 @@
-k3svers: '0.6.0'
-helm_version: '2.12.3'
+k3svers: '1.0.0'
+helm_version: '2.16.1'
