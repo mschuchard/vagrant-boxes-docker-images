@@ -1,10 +1,10 @@
-FROM python:3.6 AS builder
+FROM python:3.7 AS builder
 WORKDIR /home
 RUN pip install --no-cache-dir cython
 COPY requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-RUN mv test.py test.pyx && cython test.pyx --embed && gcc -Os -I /usr/include/python2.7m -o test test.c -lpython2.7m -lpthread -lm -lutil -ldl
+RUN mv test.py test.pyx && cython test.pyx --embed && gcc -Os -I /usr/include/python3.7m -o test test.c -lpython3.7m -lpthread -lm -lutil -ldl
 
 FROM alpine:3.7
 COPY --from=builder /home/test /usr/bin/test
