@@ -1,0 +1,15 @@
+---
+version: '3'
+
+services:
+  detect_secrets_server:
+    build:
+      context: .
+    image: 'detect-secrets-server:1.0'
+    container_name: detect-secrets-server
+    volumes:
+    - ~/.ssh:/root/.keys:ro
+    command:
+    - 'git@github.com:mschuchard/vagrant-boxes-docker-images'
+
+# docker run -it -v ~/.ssh:/root/.ssh:ro --entrypoint=bash detect-secrets-server:1.0
