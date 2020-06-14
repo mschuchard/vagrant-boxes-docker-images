@@ -4,3 +4,4 @@ extensions:
 - dashboard
 - storage
 - ingress
+awx_version: '9.3.0'

@@ -1,0 +1,23 @@
+---
+- name: post-provision awx onto microk8s (needs kubeconfig and helm setup first)
+  hosts: all, localhost
+  become: true
+  vars_files:
+  - vars.yml
+
+  tasks:
+  - name: retrieve version {{awx_version}} of awx
+    git:
+      repo: 'git@github.com:ansible/awx.git'
+      dest: /tmp/awx
+      version: '9.3.0'
+
+  - name: configure inventory file
+    file:
+      path: /tmp/awx/installer/inventory
+# Kubernetes Install
+kubernetes_context=microk8s
+kubernetes_namespace=awx
+(fine tune later with more options; especially ingress)
+
+ansible-playbook -i inventory install.yml
