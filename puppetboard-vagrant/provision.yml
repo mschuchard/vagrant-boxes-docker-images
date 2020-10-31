@@ -1,0 +1,53 @@
+---
+- name: provision a puppet server, puppetdb, and puppetboard
+  hosts: all, localhost
+  become: true
+  vars_files:
+  - vars.yml
+
+  tasks:
+  - name: subscribe to puppet platform repo
+    package:
+      name: 'http://yum.puppet.com/puppet6/puppet6-release-el-8.noarch.rpm'
+      state: present
+
+  - name: import centos and puppet platform rpm gpg keys
+    rpm_key:
+      state: present
+      key: "{{ item }}"
+    with_items:
+    - /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+    - /etc/pki/rpm-gpg/RPM-GPG-KEY-puppet5-release
+
+  - name: install puppetserver
+    package:
+      name: puppetserver-{{ puppetserver_version }}
+      state: present
+
+  - name: reduce puppetserver from 2gb to 1gb
+    lineinfile:
+      state: present
+      path: /etc/sysconfig/puppetserver
+      regexp: '^JAVA_ARGS='
+      line: 'JAVA_ARGS="-Xms1g -Xmx1g -Djruby.logger.class=com.puppetlabs.jruby_utils.jruby.Slf4jLogger"'
+
+  - name: start and enable puppetserver
+    service:
+      name: puppetserver
+      state: running
+      enabled: true
+
+  - name: install puppetdb and puppetboard modules
+    command: /opt/puppetlabs/puppet/bin module install {{ item }}
+    with_items:
+    - puppetlabs/puppetdb
+    - puppet/puppetboard
+
+  - name: generate cert sign request
+    command: /opt/puppetlabs/bin/puppet agent -t
+
+  - name: sign puppet cert request # ideal use puppetserver ca, but it does not work
+    command: /opt/puppetlabs/bin/puppet cert sign puppet
+
+  - name: install and configure puppetdb and puppetboard with puppet
+    command: /opt/puppetlabs/bin/puppet apply /vagrant/apply.pp
