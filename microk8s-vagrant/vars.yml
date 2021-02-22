@@ -1,7 +1,13 @@
-kube_version: '1.16'
+# microk8s vars
+k8s: true
+kube_version: '1.19'
 extensions:
 - dns
 - dashboard
-- storage
+- helm3
 - ingress
-awx_version: '9.3.0'
+- storage
+
+# awx vars
+awx: true
+awx_version: '17.0.1'
