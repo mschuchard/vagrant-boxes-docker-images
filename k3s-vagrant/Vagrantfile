@@ -1,7 +1,7 @@
 require_relative '../vagrant/vagrant_utilities'
 
 Vagrant.configure('2') do |config|
-  config.vm.box = 'debian/stretch64'
+  config.vm.box = 'debian/buster64'
 
   config.vm.define 'control' do |km|
     km.vm.network 'private_network', ip: '192.168.33.33'

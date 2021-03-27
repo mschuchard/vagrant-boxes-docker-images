@@ -1,4 +1,4 @@
-dockervers: '18.09.11'
+dockervers: '19.03.15'
 minikubevers: '1.7.2'
-kubevers: '1.16.6'
-helm_version: '2.16.1'
+kubevers: '1.19.9'
+helm_version: '3.5.3'

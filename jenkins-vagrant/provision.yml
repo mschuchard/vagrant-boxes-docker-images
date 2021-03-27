@@ -93,6 +93,7 @@
     - pipeline-utility-steps
     - kubernetes
     - hashicorp-vault-plugin
+    - http_request
 
   # also maybe changed password in case that regression happens
   - name: restart jenkins to pickup plugins
