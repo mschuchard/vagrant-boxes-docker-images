@@ -29,17 +29,18 @@
     - deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
     - deb http://apt.kubernetes.io/ kubernetes-xenial main # kubectl not being updated for debian 9
 
-  - name: install docker, kubectl, and socat (needed for helm)
+  - name: install docker, kubectl, socat (needed for helm), and conntrack (needed to workaround minikube issue with later k8s versions)
     apt:
       name:
-      - "docker-ce={{dockervers}}~ce-0~debian"
+      - "docker-ce={{dockervers}}"
       - "kubectl={{kubevers}}-00"
       - socat
+      - conntrack
       state: present
 
   - name: download helm tarball and unpack helm
     unarchive:
-      src: https://storage.googleapis.com/kubernetes-helm/helm-v{{helm_version}}-{{ansible_system | lower}}-amd64.tar.gz
+      src: https://get.helm.sh/helm-v{{helm_version}}-{{ansible_system | lower}}-amd64.tar.gz
       dest: /usr/bin/
       remote_src: true
       extra_opts:
@@ -49,7 +50,7 @@
 
   - name: grab and install minikube package
     apt:
-      deb: "https://github.com/kubernetes/minikube/releases/download/v{{minikubevers}}/minikube_{{minikubevers}}.deb"
+      deb: "https://github.com/kubernetes/minikube/releases/download/v{{minikubevers}}/minikube_{{minikubevers}}-0_amd64.deb"
       state: present
 
   - name: initialize minikube using driver for docker and vagrant hostname/ip
@@ -75,14 +76,10 @@
     command: nohup kubectl proxy &
     poll: 0
 
-  - name: initialize helm and install tiller
-    command: helm init
-
   - name: capture cert info
-    command: "cat /root/.minikube/{{item}}"
+    command: "cat /root/.minikube/profiles/minikube/{{item}}"
     register: "{{item}}_contents"
     with_items:
-    - ca.crt
     - client.crt
     - client.key
 
@@ -90,6 +87,13 @@
     debug:
       var: "{{item}}_contents.stdout"
     with_items:
-    - ca.crt
     - client.crt
     - client.key
+
+  - name: capture ca cert info
+    command: cat /root/.minikube/ca.crt
+    register: ca_cert_contents
+
+  - name: display ca cert info
+    debug:
+      var: ca_cert_contents.stdout

@@ -33,8 +33,8 @@
 
 - name: display config information
   debug:
-    var: config_contents.stdout
+    var: config_contents.stdout_lines
 
 - name: explain what needs to be updated in kubeconfig
   debug:
-    msg: admin user password and microk8s-cluster certificate-authority-data updated per provision; sudo microk8s dashboard-proxy in vagrant box to view dashboard
+    msg: admin user token and microk8s-cluster certificate-authority-data updated per provision; sudo microk8s dashboard-proxy in vagrant box to view dashboard
