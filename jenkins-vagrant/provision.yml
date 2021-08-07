@@ -20,64 +20,64 @@
 
   tasks:
   - name: subscribe to jenkins and docker repos
-    get_url:
-      url: https://{{item.value.url}}
-      dest: /etc/yum.repos.d/{{item.key}}.repo
-    with_dict:
-      jenkins:
-        url: pkg.jenkins.io/redhat-stable/jenkins.repo
-      docker:
-        url: download.docker.com/linux/fedora/docker-ce.repo
+    ansible.builtin.get_url:
+      url: https://{{ item.url }}
+      dest: /etc/yum.repos.d/{{ item.repo }}.repo
+    loop:
+    - repo: jenkins
+      url: pkg.jenkins.io/redhat-stable/jenkins.repo
+    - repo: docker
+      url: download.docker.com/linux/fedora/docker-ce.repo
 
   - name: import jenkins gpg key
-    rpm_key:
+    ansible.builtin.rpm_key:
       state: present
       key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 
   - name: install required system packages
-    package:
+    ansible.builtin.package:
       name:
       - git
-      - java-{{java_version}}-openjdk
+      - java-{{ java_version }}-openjdk
       - jenkins
       - ansible
-      - docker-ce-{{docker_version}}
+      - docker-ce-{{ docker_version }}
       - ntp # for library retreival not hitting github rate limits
       - unzip # for hashi installs
       state: present
 
   - name: create docker group
-    group:
+    ansible.builtin.group:
       name: docker
       state: present
 
   - name: add jenkins user to docker group
-    user:
+    ansible.builtin.user:
       name: jenkins
       groups: docker
 
   - name: restart docker to recognize jenkins user
-    service:
+    ansible.builtin.service:
       name: docker
       state: restarted
 
   - name: disable setup wizard
-    lineinfile:
+    ansible.builtin.lineinfile:
       path: /etc/sysconfig/jenkins
       regexp: '^JENKINS_JAVA_OPTIONS=.*'
       line: 'JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
 
   - name: start jenkins to install plugins and ntpd for github api rate limits
-    service:
-      name: "{{item}}"
+    ansible.builtin.service:
+      name: "{{ item }}"
       state: started
       enabled: true
-    with_items:
+    loop:
     - jenkins
     - ntpd
 
   - name: wait for jenkins to come up
-    command: sleep 10
+    ansible.builtin.command: sleep 10
 
   #- name: update plugin metadata
   #  command: "curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack"
@@ -85,8 +85,8 @@
   # TODO: not idempotent
   # 'docker-pipeline' is installed as a pipeline dep; workflow-aggregator is the actual name of pipeline
   - name: install plugins
-    command: java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 install-plugin {{item}}
-    with_items:
+    ansible.builtin.command: java -jar /usr/lib/jenkins-plugin-manager.jar -p {{ item }}
+    loop:
     - workflow-aggregator
     - blueocean
     - ansible
@@ -97,56 +97,56 @@
 
   # also maybe changed password in case that regression happens
   - name: restart jenkins to pickup plugins
-    service:
+    ansible.builtin.service:
       name: jenkins
       state: restarted
 
   - name: wait for jenkins to come up
-    command: sleep 10
+    ansible.builtin.command: sleep 10
 
   - name: download and unzip software
-    unarchive:
-      src: https://releases.hashicorp.com/{{item.key}}/{{item.value.version}}/{{item.key}}_{{item.value.version}}_{{ansible_system | lower}}_amd64.zip
+    ansible.builtin.unarchive:
+      src: https://releases.hashicorp.com/{{ item.tool }}/{{ item.version }}/{{ item.tool }}_{{ item.version }}_{{ ansible_system | lower }}_amd64.zip
       dest: /usr/bin/
       remote_src: yes
-    with_dict:
-      packer:
-        version: "{{packer_version}}"
-      terraform:
-        version: "{{terraform_version}}"
+    loop:
+    - tool: packer
+      version: "{{ packer_version }}"
+    - tool: terraform
+      version: "{{ terraform_version }}"
 
   - name: download static binaries for goss packer plugin, openfaas cli, and kubectl
-    get_url:
+    ansible.builtin.get_url:
       url: "{{item.value.url}}"
       dest: /usr/bin/{{item.key}}
-    with_dict:
-      'packer-provisioner-goss':
-        url: https://github.com/YaleUniversity/packer-provisioner-goss/releases/download/v{{packer_goss_version}}/packer-provisioner-goss-v{{packer_goss_version}}-linux-amd64
-      'faas-cli':
-        url: https://github.com/openfaas/faas-cli/releases/download/{{faas_version}}/faas-cli
-      kubectl:
-        url: https://storage.googleapis.com/kubernetes-release/release/v{{kubectl_version}}/bin/{{ansible_system | lower}}/amd64/kubectl
+    loop:
+    - tool: 'packer-provisioner-goss'
+      url: https://github.com/YaleUniversity/packer-provisioner-goss/releases/download/v{{ packer_goss_version }}/packer-provisioner-goss-v{{ packer_goss_version }}-linux-amd64
+    - tool: 'faas-cli'
+      url: https://github.com/openfaas/faas-cli/releases/download/{{ faas_version }}/faas-cli
+    - tool: kubectl
+      url: https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl_version }}/bin/{{ ansible_system | lower }}/amd64/kubectl
 
 
   - name: make those static binaries executable
-    file:
-      path: /usr/bin/{{item}}
-      mode: 0755
-    with_items:
+    ansible.builtin.file:
+      path: /usr/bin/{{ item }}
+      mode: '0755'
+    loop:
     - packer-provisioner-goss
     - faas-cli
     - kubectl
 
   - name: download helm tarball and unpack helm
-    unarchive:
-      src: https://storage.googleapis.com/kubernetes-helm/helm-v{{helm_version}}-{{ansible_system | lower}}-amd64.tar.gz
+    ansible.builtin.unarchive:
+      src: https://storage.googleapis.com/kubernetes-helm/helm-v{{ helm_version }}-{{ ansible_system | lower }}-amd64.tar.gz
       dest: /usr/bin/
       remote_src: true
       extra_opts:
       - '--strip-components'
       - '1'
-      - "{{ansible_system | lower}}-amd64/helm"
+      - "{{ ansible_system | lower }}-amd64/helm"
 
   - name: helpful output message
-    debug:
+    ansible.builtin.debug:
       msg: 'Need to configure plugins, AWS/Docker credentials, and DevOps library in the GUI!'

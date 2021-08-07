@@ -1,4 +1,4 @@
 dockervers: '5:19.03.15~3-0~debian-stretch'
 minikubevers: '1.18.1'
-kubevers: '1.19.9'
+kubevers: '1.21.4'
 helm_version: '3.5.3'
