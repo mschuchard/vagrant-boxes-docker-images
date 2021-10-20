@@ -9,5 +9,5 @@ extensions:
 - storage
 
 # awx vars
-awx: true
+awx: false
 awx_version: '17.0.1'

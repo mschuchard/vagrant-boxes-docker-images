@@ -1,40 +1,56 @@
 ---
 - name: install microk8s snap
-  snap:
+  community.general.snap::
     name: microk8s
     state: present
     channel: "{{ kube_version }}/stable"
     classic: true
 
 - name: start microk8s
-  command: microk8s.start
+  ansible.builtin.command: microk8s.start
 
 - name: wait until microk8s is truly up
   command: microk8s.status --wait-ready
 
 - name: enable microk8s extensions
-  command: microk8s.enable {{ item }}
+  ansible.builtin.command: microk8s.enable {{ item }}
   with_items:
   - "{{ extensions }}"
 
 - name: alias the microk8s kubectl and helm3
-  command: snap alias microk8s.{{ item.key }} {{ item.value }}
+  ansible.builtin.command: snap alias microk8s.{{ item.key }} {{ item.value }}
   with_dict:
     kubectl: kubectl
     helm3: helm
 
 - name: label the dashboard as a cluster service so it appears under cluster-info
-  command: kubectl -n kube-system label svc kubernetes-dashboard kubernetes.io/cluster-service=true
+  ansible.builtin.command: kubectl -n kube-system label svc kubernetes-dashboard kubernetes.io/cluster-service=true
 
 # TODO: replace 10.0.2.15 with 192.168.8.8 somehow with https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html#regular-expression-filters
 - name: capture config information
-  command: microk8s.config
+  ansible.builtin.command: microk8s.config
   register: config_contents
 
 - name: display config information
-  debug:
+  ansible.builtin.debug:
     var: config_contents.stdout_lines
 
-- name: explain what needs to be updated in kubeconfig
-  debug:
-    msg: admin user token and microk8s-cluster certificate-authority-data updated per provision; sudo microk8s dashboard-proxy in vagrant box to view dashboard
+- name: capture cluster join command
+  ansible.builtin.command: microk8s add-node
+  register: cluster_join_contents
+
+- name: display cluster join information
+  ansible.builtin.debug:
+    msg: "{{ cluster_join_contents.stdout | regex_search('192.168.8.8', multiline=True) }}"
+
+- name: capture second cluster join command
+  ansible.builtin.command: microk8s add-node
+  register: cluster_join_contents
+
+- name: display second cluster join information
+  ansible.builtin.debug:
+    msg: "{{ cluster_join_contents.stdout | regex_search('192.168.8.8', multiline=True) }}"
+
+- name: explain what needs to be performed manually
+  ansible.builtin.debug:
+    msg: admin user token and microk8s-cluster certificate-authority-data updated per provision in kubeconfig; sudo microk8s dashboard-proxy in vagrant box to view dashboard;
