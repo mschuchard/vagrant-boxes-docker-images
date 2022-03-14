@@ -67,11 +67,11 @@ fi
 
 if [ -d ./lib ]; then
   echo "Linting package using eslint..."
-  ./node_modules/.bin/eslint lib
+  ./node_modules/.bin/eslint lib || true
 fi
 if [ -d ./spec ]; then
   echo "Linting package specs using eslint..."
-  ./node_modules/.bin/eslint spec
+  ./node_modules/.bin/eslint spec || true
 fi
 
 echo "Running specs..."
