@@ -16,6 +16,5 @@
   - name: start microk8s
     ansible.builtin.command: microk8s.start
 
-  # TODO: obtain command from controller tasks
-  #- name: join kubernetes cluster
-    #ansible.builtin.command: microk8s join 192.168.8.8:25000/???
+  - name: join kubernetes cluster
+    ansible.builtin.command: "{{ lookup('ansible.builtin.file', 'cluster_join' + worker | string) }} --worker"

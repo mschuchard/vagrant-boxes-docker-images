@@ -1,10 +1,13 @@
 require_relative '../vagrant/vagrant_utilities'
 
+WORKERS = 2
+CONTROL_IP = '192.168.56.8'.freeze
+
 Vagrant.configure('2') do |config|
-  config.vm.box = 'ubuntu/focal64'
+  config.vm.box = 'ubuntu/jammy64'
 
   config.vm.define 'controller' do |controller|
-    controller.vm.network 'private_network', ip: '192.168.8.8'
+    controller.vm.network 'private_network', ip: CONTROL_IP
     controller.vm.hostname = 'microk8s.local'
 
     controller.vm.provider 'virtualbox' do |vb|
@@ -12,15 +15,19 @@ Vagrant.configure('2') do |config|
       vb.memory = '2048'
     end
 
-    # bootstrap box; TODO update awx for operator; pass number of nodes for generate same number of tokens
+    # bootstrap box; TODO update awx for operator
     controller.vm.provision :ansible do |ansible|
       ansible.playbook = 'bootstrap.yml'
+      ansible.extra_vars = {
+        workers:    WORKERS,
+        control_ip: CONTROL_IP
+      }
     end
   end
 
-  (1..2).each do |i|
+  (1..WORKERS).each do |i|
     config.vm.define "worker#{i}" do |worker|
-      worker.vm.network 'private_network', ip: "192.168.8.8#{i}"
+      worker.vm.network 'private_network', ip: "#{CONTROL_IP}#{i}"
       worker.vm.hostname = "microk8s#{i}.local"
       worker.vm.synced_folder '.', '/vagrant', disabled: true
 
@@ -32,6 +39,9 @@ Vagrant.configure('2') do |config|
       # bootstrap box
       worker.vm.provision :ansible do |ansible|
         ansible.playbook = 'worker.yml'
+        ansible.extra_vars = {
+          worker: i - 1
+        }
       end
     end
   end

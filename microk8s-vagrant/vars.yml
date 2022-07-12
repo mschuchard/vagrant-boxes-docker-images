@@ -1,6 +1,6 @@
 # microk8s vars
 k8s: true
-kube_version: '1.21'
+kube_version: '1.23'
 extensions:
 - dns
 - dashboard

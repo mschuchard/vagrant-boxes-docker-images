@@ -1,0 +1,10 @@
+---
+- name: capture cluster join command
+  ansible.builtin.command: microk8s add-node
+  register: cluster_join_contents
+
+- name: save cluster join information
+  ansible.builtin.copy:
+    dest: /vagrant/cluster_join{{ item }}
+    content: "{{ cluster_join_contents.stdout | regex_search('microk8s join ' + control_ip + ':25000/(\\w+)', multiline=True) }}"
+    mode: '0440'
