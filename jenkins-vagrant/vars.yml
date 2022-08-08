@@ -1,8 +1,8 @@
 java_version: 1.11.0
 docker_version: 20.10.9
-packer_version: 1.7.6
-terraform_version: 0.15.5
+packer_version: 1.7.10
+terraform_version: 1.1.9
 packer_goss_version: 3.0.2
 faas_version: 0.20.12
-kubectl_version: 1.22.2
-helm_version: 3.6.3
+kubectl_version: 1.23.8
+helm_version: 3.8.2
