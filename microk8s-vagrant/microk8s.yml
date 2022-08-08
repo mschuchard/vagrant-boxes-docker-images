@@ -10,7 +10,7 @@
   ansible.builtin.command: microk8s.start
 
 - name: wait until microk8s is truly up
-  command: microk8s.status --wait-ready
+  ansible.builtin.command: microk8s.status --wait-ready
 
 - name: enable microk8s extensions
   ansible.builtin.command: microk8s.enable {{ item }}
@@ -26,19 +26,19 @@
 - name: label the dashboard as a cluster service so it appears under cluster-info
   ansible.builtin.command: kubectl -n kube-system label --overwrite=true svc kubernetes-dashboard kubernetes.io/cluster-service=true
 
-- name: capture config information
+- name: capture kubeconfig information
   ansible.builtin.command: microk8s.config
   register: config_contents
 
-- name: display config information
+- name: display kubeconfig information
   ansible.builtin.debug:
     msg: "{{ config_contents.stdout_lines | regex_replace('10.0.2.15', control_ip, multiline=True) }}"
 
 - name: generate cluster join commands for workers
-  include_tasks: cluster_join_gen.yml
+  ansible.builtin.include_tasks: cluster_join_gen.yml
   loop: "{{ range(workers) }}"
 
-- name: proxy the kubernetes dashboard
+- name: proxy the kubernetes dashboard in the background
   ansible.builtin.command: nohup microk8s dashboard-proxy &
   async: 65535
   poll: 0

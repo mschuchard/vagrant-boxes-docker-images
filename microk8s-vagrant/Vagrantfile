@@ -1,23 +1,28 @@
 require_relative '../vagrant/vagrant_utilities'
 
+# specify number of worker nodes and control plane ip as constants
 WORKERS = 2
 CONTROL_IP = '192.168.56.8'.freeze
 
 Vagrant.configure('2') do |config|
   config.vm.box = 'ubuntu/jammy64'
 
+  # configure the kubernetes control plane node
   config.vm.define 'controller' do |controller|
+    # assign the private network and hostname to enable connectivity
     controller.vm.network 'private_network', ip: CONTROL_IP
     controller.vm.hostname = 'microk8s.local'
 
+    # specify the resources
     controller.vm.provider 'virtualbox' do |vb|
       vb.cpus = '2'
       vb.memory = '2048'
     end
 
-    # bootstrap box; TODO update awx for operator
+    # software provision the control plane node with ansible; TODO update awx for operator
     controller.vm.provision :ansible do |ansible|
       ansible.playbook = 'bootstrap.yml'
+      # pass number of works and control plane ip to the ansible tasks
       ansible.extra_vars = {
         workers:    WORKERS,
         control_ip: CONTROL_IP
@@ -25,21 +30,26 @@ Vagrant.configure('2') do |config|
     end
   end
 
+  # configure the kubernetes worker nodes
   (1..WORKERS).each do |i|
     config.vm.define "worker#{i}" do |worker|
+      # dynamically assign the private network and hostname to enable connectivity
       worker.vm.network 'private_network', ip: "#{CONTROL_IP}#{i}"
       worker.vm.hostname = "microk8s#{i}.local"
+      # folder syncing is unnecessary for the worker nodes
       worker.vm.synced_folder '.', '/vagrant', disabled: true
 
+      # specify the resources
       worker.vm.provider 'virtualbox' do |vb|
         vb.cpus = '1'
         vb.memory = '1024'
       end
 
-      # bootstrap box
+      # software provision the worker node with ansible
       worker.vm.provision :ansible do |ansible|
         ansible.playbook = 'worker.yml'
         ansible.extra_vars = {
+          # pass worker number with element ordering to the ansible tasks
           worker: i - 1
         }
       end
