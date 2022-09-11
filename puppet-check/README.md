@@ -18,5 +18,5 @@ docker run --rm -v ${PWD}:/puppet matthewschuchard/puppet-check -s .
 - Facter 4.2.11
 - Hiera 3.10.0
 - Puppet-Lint 2.5.2
-- Rubocop 1.33.0
+- Rubocop 1.36.0
 - Reek 6.1.1
