@@ -1,4 +1,4 @@
-FROM ruby:2.7-alpine
+FROM ruby:3.0-alpine
 ARG VERSION=1.2.0
 RUN apk add --no-cache --update build-base && \
     gem install --no-document -v "$VERSION" rapid-vaults && \

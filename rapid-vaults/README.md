@@ -1,6 +1,6 @@
 # Rapid-Vaults
 
-This image of [Rapid Vaults](https://github.com/mschuchard/rapid-vaults) is based on the `ruby:2-7-alpine` image. It will contain the latest version of Alpine Linux, and the latest version of Ruby 2.7 at the time of build. It will also contain the latest version of its dependencies at time of build.
+This image of [Rapid Vaults](https://github.com/mschuchard/rapid-vaults) is based on the `ruby:3.0-alpine` image. It will contain the latest version of Alpine Linux, and the latest version of Ruby 3.0 at the time of build. It will also contain the latest version of its dependencies at time of build.
 
 This image does not contain optional dependencies such as gRPC. If you need these for your environment, then it is recommended to create a new image from this image, and to install those additional optional dependencies with `apk` and `gem`.
 
@@ -13,4 +13,4 @@ docker run --rm -v ${PWD}:/crypt matthewschuchard/rapid-vaults --generate
 
 ## Current Latest Image Specs
 - Alpine 3.16
-- Ruby 2.7.7
+- Ruby 3.0.5

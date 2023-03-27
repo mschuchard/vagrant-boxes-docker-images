@@ -4,5 +4,5 @@ A simple image based from the official Hashicorp Packer image that additionally 
 
 # Versions
 
-- Packer 1.8.5
+- Packer 1.8.6
 - Ansible 2.13.6
