@@ -1,15 +1,15 @@
 ---
-- name: bootstrap an ubuntu microk8s vagrant box
+- name: Bootstrap an ubuntu microk8s vagrant box
   hosts: all, localhost
   become: true
   vars_files:
   - vars.yml
 
   tasks:
-  - name: install and configure microk8s
-    include_tasks: microk8s.yml
+  - name: Install and configure microk8s
+    ansible.builtin.include_tasks: microk8s.yml
     when: k8s
 
-  - name: provision awx onto microk8s
-    include_tasks: awx.yml
+  - name: Provision awx onto microk8s
+    ansible.builtin.include_tasks: awx.yml
     when: awx

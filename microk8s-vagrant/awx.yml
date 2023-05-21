@@ -1,33 +1,33 @@
 ---
-- name: install git and ansible
-  apt:
+- name: Install git and ansible
+  ansible.builtin.apt:
     name:
     - git
     - ansible
     state: present
     update_cache: true # need for universe --> ansible
 
-- name: retrieve version {{ awx_version }} of awx
-  git:
+- name: Retrieve awx version {{ awx_version }}
+  ansible.builtin.git:
     repo: 'https://github.com/ansible/awx.git'
     dest: /tmp/awx
     version: "{{ awx_version }}"
     force: true
 
 # template must be verified against file from git repo whenever new version of awx is installed; currently ingress annotations are bugged in awx installer
-- name: configure awx installer inventory file
-  template:
+- name: Configure awx installer inventory file
+  ansible.builtin.template:
     src: inventory.j2
     dest: /tmp/awx/installer/inventory
-    mode: 0644
+    mode: '0644'
 
-- name: execute awx installation playbook
-  command: ansible-playbook -i inventory install.yml
+- name: Execute awx installation playbook
+  ansible.builtin.command: ansible-playbook -i inventory install.yml
   args:
     chdir: /tmp/awx/installer
 
-- name: uninstall git and ansible
-  apt:
+- name: Uninstall git and ansible
+  ansible.builtin.apt:
     name:
     - git
     - ansible

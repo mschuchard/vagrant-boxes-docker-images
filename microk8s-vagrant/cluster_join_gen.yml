@@ -1,10 +1,14 @@
 ---
-- name: capture cluster join command
+- name: Capture cluster join command
   ansible.builtin.command: microk8s add-node
   register: cluster_join_contents
 
-- name: save cluster join information
+#TODO: maybe use fetch module instead
+- name: Save cluster join information
   ansible.builtin.copy:
-    dest: /vagrant/cluster_join{{ item }}
+    dest: /vagrant/cluster_join{{ worker_num + 1 }}
     content: "{{ cluster_join_contents.stdout | regex_search('microk8s join ' + control_ip + ':25000/(\\w+)', multiline=True) }}"
     mode: '0440'
+  loop: "{{ range(workers) }}"
+  loop_control:
+    loop_var: worker_num

@@ -1,48 +1,59 @@
 ---
-- name: install microk8s snap
+- name: Install microk8s snap
   community.general.snap:
     name: microk8s
     state: present
     channel: "{{ kube_version }}/stable"
     classic: true
 
-- name: start microk8s
+- name: Start microk8s
   ansible.builtin.command: microk8s.start
 
-- name: wait until microk8s is truly up
+- name: Wait until microk8s is truly up
   ansible.builtin.command: microk8s.status --wait-ready
 
-- name: enable microk8s extensions
-  ansible.builtin.command: microk8s.enable {{ item }}
-  with_items:
-  - "{{ extensions }}"
+- name: Enable microk8s extensions
+  ansible.builtin.command: microk8s.enable {{ extension }}
+  loop: "{{ extensions }}"
+  loop_control:
+    loop_var: extension
 
-- name: alias the microk8s kubectl and helm3
-  ansible.builtin.command: snap alias microk8s.{{ item.key }} {{ item.value }}
-  with_dict:
-    kubectl: kubectl
-    helm3: helm
+- name: Alias the microk8s kubectl and helm3
+  ansible.builtin.command: snap alias microk8s.{{ item.exec }} {{ item.alias }}
+  loop:
+  - exec: kubectl
+    alias: kubectl
+  - exec: helm3
+    alias: helm
 
-- name: label the dashboard as a cluster service so it appears under cluster-info
+- name: Label the dashboard as a cluster service so it appears under cluster-info
   ansible.builtin.command: kubectl -n kube-system label --overwrite=true svc kubernetes-dashboard kubernetes.io/cluster-service=true
 
-- name: capture kubeconfig information
+- name: Capture kubeconfig information
   ansible.builtin.command: microk8s.config
   register: config_contents
 
-- name: display kubeconfig information
+- name: Display kubeconfig information
   ansible.builtin.debug:
     msg: "{{ config_contents.stdout_lines | regex_replace('10.0.2.15', control_ip, multiline=True) }}"
 
-- name: generate cluster join commands for workers
+- name: Generate cluster join commands for workers
   ansible.builtin.include_tasks: cluster_join_gen.yml
   loop: "{{ range(workers) }}"
 
-- name: proxy the kubernetes dashboard in the background
+- name: Add hosts entries for the worker nodes
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ control_ip }}{{ worker_num + 1 }} microk8s{{ worker_num + 1 }}.local microk8s{{ worker_num + 1 }}"
+  loop: "{{ range(workers) }}"
+  loop_control:
+    loop_var: worker_num
+
+- name: Proxy the kubernetes dashboard in the background
   ansible.builtin.command: nohup microk8s dashboard-proxy &
   async: 65535
   poll: 0
 
-- name: explain what needs to be performed manually
+- name: Explain what needs to be performed manually
   ansible.builtin.debug:
     msg: admin user token and microk8s-cluster certificate-authority-data updated per provision in kubeconfig

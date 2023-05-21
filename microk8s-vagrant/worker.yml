@@ -1,20 +1,25 @@
 ---
-- name: bootstrap an ubuntu microk8s worker vagrant box
+- name: Bootstrap an ubuntu microk8s worker vagrant box
   hosts: all, localhost
   become: true
   vars_files:
   - vars.yml
 
   tasks:
-  - name: install microk8s snap
+  - name: Install microk8s snap
     community.general.snap:
       name: microk8s
       state: present
       channel: "{{ kube_version }}/stable"
       classic: true
 
-  - name: start microk8s
+  - name: Start microk8s
     ansible.builtin.command: microk8s.start
 
-  - name: join kubernetes cluster
+  - name: Join kubernetes cluster
     ansible.builtin.command: "{{ lookup('ansible.builtin.file', 'cluster_join' + worker | string) }} --worker"
+
+  - name: Ensure cluster join file no longer exists after use
+    ansible.builtin.file:
+      path: cluster_join{{ worker | string }}
+      state: absent
