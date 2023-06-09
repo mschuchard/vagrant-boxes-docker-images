@@ -3,7 +3,6 @@
 # chmod 0755 /home/vagrant
 # systemctl start ntpd # needed for github api
 # setup .kube/config and .minikube/ca.crt, client.crt, client.key
-# helm init
 # git clone https://github.com/openfaas/faas-netes
 # cd faas-netes && kubectl apply -f namespaces.yml
 # cd chart && helm upgrade --install openfaas openfaas/ --namespace openfaas --set functionNamespace=openfaas-fn
@@ -12,29 +11,30 @@
 # setup docker agents
 # convert to using docker images instead of installing pkgs?
 ---
-- name: provision a loaded up jenkins master
+- name: Provision a loaded up jenkins master
   hosts: all, localhost
   become: true
   vars_files:
   - vars.yml
 
   tasks:
-  - name: subscribe to jenkins and docker repos
+  - name: Subscribe to jenkins and docker repos
     ansible.builtin.get_url:
       url: https://{{ item.url }}
       dest: /etc/yum.repos.d/{{ item.repo }}.repo
+      mode: '0444'
     loop:
     - repo: jenkins
       url: pkg.jenkins.io/redhat-stable/jenkins.repo
     - repo: docker
       url: download.docker.com/linux/fedora/docker-ce.repo
 
-  - name: import jenkins gpg key
+  - name: Import jenkins gpg key
     ansible.builtin.rpm_key:
       state: present
       key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 
-  - name: install required system packages
+  - name: Install required system packages
     ansible.builtin.package:
       name:
       - git
@@ -46,28 +46,28 @@
       - unzip # for hashi installs
       state: present
 
-  - name: create docker group
+  - name: Create docker group
     ansible.builtin.group:
       name: docker
       state: present
 
-  - name: add jenkins user to docker group
+  - name: Add jenkins user to docker group
     ansible.builtin.user:
       name: jenkins
       groups: docker
 
-  - name: restart docker to recognize jenkins user
+  - name: Restart docker to recognize jenkins user
     ansible.builtin.service:
       name: docker
       state: restarted
 
-  - name: disable setup wizard
+  - name: Disable setup wizard
     ansible.builtin.lineinfile:
       path: /etc/sysconfig/jenkins
       regexp: '^JENKINS_JAVA_OPTIONS=.*'
       line: 'JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
 
-  - name: start jenkins to install plugins and ntpd for github api rate limits
+  - name: Start jenkins to install plugins and ntpd for github api rate limits
     ansible.builtin.service:
       name: "{{ item }}"
       state: started
@@ -76,16 +76,20 @@
     - jenkins
     - ntpd
 
-  - name: wait for jenkins to come up
-    ansible.builtin.command: sleep 10
+  - name: Wait for jenkins to finish restarting
+    ansible.builtin.wait_for:
+      timeout: 10
+    delegate_to: localhost
 
   #- name: update plugin metadata
   #  command: "curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack"
 
   # TODO: not idempotent
   # 'docker-pipeline' is installed as a pipeline dep; workflow-aggregator is the actual name of pipeline
-  - name: install plugins
+  - name: Install plugins
     ansible.builtin.command: java -jar /usr/lib/jenkins-plugin-manager.jar -p {{ item }}
+    register: plugin_install
+    changed_when: item in plugin_install.stdout
     loop:
     - workflow-aggregator
     - blueocean
@@ -96,48 +100,49 @@
     - http_request
 
   # also maybe changed password in case that regression happens
-  - name: restart jenkins to pickup plugins
+  - name: Restart jenkins to pickup plugins
     ansible.builtin.service:
       name: jenkins
       state: restarted
 
-  - name: wait for jenkins to come up
-    ansible.builtin.command: sleep 10
+  - name: Wait for jenkins to finish restarting
+    ansible.builtin.wait_for:
+      timeout: 10
+    delegate_to: localhost
 
-  - name: download and unzip software
+  - name: Download and unzip software
     ansible.builtin.unarchive:
       src: https://releases.hashicorp.com/{{ item.tool }}/{{ item.version }}/{{ item.tool }}_{{ item.version }}_{{ ansible_system | lower }}_amd64.zip
       dest: /usr/bin/
-      remote_src: yes
+      remote_src: true
+      mode: '0555'
     loop:
     - tool: packer
       version: "{{ packer_version }}"
     - tool: terraform
       version: "{{ terraform_version }}"
 
-  - name: download static binaries for goss packer plugin, openfaas cli, and kubectl
+  - name: Download static binaries for goss packer plugin, openfaas cli, and kubectl
     ansible.builtin.get_url:
-      url: "{{item.value.url}}"
-      dest: /usr/bin/{{item.key}}
+      url: "{{ item.value.url }}"
+      dest: /usr/bin/{{ item.key }}
+      mode: '0555'
     loop:
-    - tool: 'packer-provisioner-goss'
-      url: https://github.com/YaleUniversity/packer-provisioner-goss/releases/download/v{{ packer_goss_version }}/packer-provisioner-goss-v{{ packer_goss_version }}-linux-amd64
     - tool: 'faas-cli'
       url: https://github.com/openfaas/faas-cli/releases/download/{{ faas_version }}/faas-cli
     - tool: kubectl
       url: https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl_version }}/bin/{{ ansible_system | lower }}/amd64/kubectl
 
 
-  - name: make those static binaries executable
+  - name: Ensure the static binaries executable
     ansible.builtin.file:
       path: /usr/bin/{{ item }}
       mode: '0755'
     loop:
-    - packer-provisioner-goss
     - faas-cli
     - kubectl
 
-  - name: download helm tarball and unpack helm
+  - name: Download helm tarball and unpack helm
     ansible.builtin.unarchive:
       src: https://storage.googleapis.com/kubernetes-helm/helm-v{{ helm_version }}-{{ ansible_system | lower }}-amd64.tar.gz
       dest: /usr/bin/
@@ -147,6 +152,6 @@
       - '1'
       - "{{ ansible_system | lower }}-amd64/helm"
 
-  - name: helpful output message
+  - name: Helpful output message
     ansible.builtin.debug:
       msg: 'Need to configure plugins, AWS/Docker credentials, and DevOps library in the GUI!'
