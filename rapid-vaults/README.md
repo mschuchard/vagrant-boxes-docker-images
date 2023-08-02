@@ -13,4 +13,4 @@ docker run --rm -v ${PWD}:/crypt matthewschuchard/rapid-vaults --generate
 
 ## Current Latest Image Specs
 - Alpine 3.16
-- Ruby 3.0.5
+- Ruby 3.0.6

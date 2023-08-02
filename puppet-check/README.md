@@ -13,10 +13,10 @@ docker run --rm -v ${PWD}:/puppet matthewschuchard/puppet-check -s .
 
 ## Current Latest Image Specs
 - Alpine 3.16
-- Ruby 3.0.5
-- Puppet 7.23.0
-- Facter 4.3.0
+- Ruby 3.0.6
+- Puppet 7.25.0
+- Facter 4.4.1
 - Hiera 3.12.0
-- Puppet-Lint 3.3.0
-- Rubocop 1.48.1
+- Puppet-Lint 3.4.0
+- Rubocop 1.55.1
 - Reek 6.1.4
