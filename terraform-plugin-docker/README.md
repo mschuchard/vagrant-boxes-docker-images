@@ -4,7 +4,6 @@ A simple image based from the official Alpine Go image that additionally contain
 
 # Versions
 
-- Alpine 3.18
 - Go 1.20.10
 - github.com/hashicorp/terraform-plugin-framework v1.4.1
 - github.com/hashicorp/terraform-plugin-framework-validators v0.12.0

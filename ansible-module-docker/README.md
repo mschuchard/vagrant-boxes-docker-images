@@ -5,8 +5,8 @@ A simple image based from the official Python Slim image that additionally conta
 # Versions
 
 - Python 3.10.13
-- Ansible 2.15.4
-- PyTest 7.4.2
-- Pylint 2.17.5
+- Ansible 2.16.0
+- PyTest 7.4.3
+- Pylint 3.0.2
 - Flake8 6.1.0
-- Ruff 0.0.291
+- Ruff 0.1.6
