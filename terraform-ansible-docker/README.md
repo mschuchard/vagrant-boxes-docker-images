@@ -4,5 +4,5 @@ A simple image based from the official Hashicorp Terraform image that additional
 
 # Versions
 
-- Terraform 1.5.7
-- Ansible 2.14.5
+- Terraform 1.6.6
+- Ansible 2.16.1
