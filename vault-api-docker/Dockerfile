@@ -1,5 +1,5 @@
 FROM golang:1.21-alpine
-ARG VERSION=1.14.10
+ARG VERSION=1.15.6
 WORKDIR /vault-api
 COPY go.mod .
 RUN go mod download && \
