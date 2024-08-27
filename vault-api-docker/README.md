@@ -4,7 +4,7 @@ A simple image based from the official Alpine Go image that additionally contain
 
 # Versions
 
-- Go 1.21.12
+- Go 1.22.6
 - Vault 1.15.6
 - github.com/hashicorp/vault/api v1.14.0
 - github.com/hashicorp/vault/api/auth/aws v0.7.0

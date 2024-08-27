@@ -1,6 +1,6 @@
 module github.com/mschuchard/vault-api
 
-go 1.21
+go 1.22
 
 require (
 	github.com/hashicorp/vault/api v1.14.0

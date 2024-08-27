@@ -1,5 +1,5 @@
-FROM golang:1.21-alpine
+FROM golang:1.22-alpine
 WORKDIR /packer-plugin
 COPY go.mod .
 RUN go mod download && rm -f go.mod go.sum
-# TODO packer cli
+# TODO packer cli for more tests

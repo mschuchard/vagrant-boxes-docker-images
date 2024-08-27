@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine
+FROM golang:1.22-alpine
 ARG VERSION=1.15.6
 WORKDIR /vault-api
 COPY go.mod .
