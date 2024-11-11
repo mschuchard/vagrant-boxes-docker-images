@@ -1,6 +1,6 @@
 **/.vagrant
 **/fixtures
-pe-vagrant/*.tar.gz
+**/*.tar.?z
 pe-vagrant/.pe_build
 **/.terraform
 **/terraform.tfstate*

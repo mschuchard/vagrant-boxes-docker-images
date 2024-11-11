@@ -76,6 +76,7 @@
     - jenkins
     - ntpd
 
+  # TODO modify to check on port 8080
   - name: Wait for jenkins to finish restarting
     ansible.builtin.wait_for:
       timeout: 10
