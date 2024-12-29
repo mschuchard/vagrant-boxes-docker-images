@@ -1,6 +1,5 @@
 FROM golang:1.22-alpine
 ARG VERSION=1.16.3
-WORKDIR /vault-api
 COPY go.mod .
 RUN go mod download && \
     apk add --no-cache --update curl unzip && \

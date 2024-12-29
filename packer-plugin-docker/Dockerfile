@@ -1,6 +1,5 @@
 FROM golang:1.22-alpine
 ARG VERSION=1.10.3
-WORKDIR /packer-plugin
 COPY go.mod .
 RUN go mod download && \
     apk add --no-cache --update curl unzip && \

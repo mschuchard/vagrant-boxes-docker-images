@@ -1,6 +1,5 @@
 FROM golang:1.22-alpine
 ARG VERSION=1.9.8
-WORKDIR /terraform-plugin
 COPY go.mod .
 RUN go mod download && \
     go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest && \
