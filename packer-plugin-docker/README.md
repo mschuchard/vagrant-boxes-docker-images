@@ -4,8 +4,8 @@ A simple image based from the official Alpine Go image that additionally contain
 
 # Versions
 
-- Go 1.22
+- Go 1.23
 - Packer 1.10.3
-- github.com/hashicorp/hcl/v2 v2.22.0
-- github.com/hashicorp/packer-plugin-sdk v0.5.4
+- github.com/hashicorp/hcl/v2 v2.23.0
+- github.com/hashicorp/packer-plugin-sdk v0.6.0
 - github.com/nywilken/go-cty v1.13.3
