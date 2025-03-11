@@ -5,6 +5,6 @@ A simple image based from the official Python Slim image that additionally conta
 # Versions
 
 - Python 3.12
-- Ansible 2.17.6
-- PyTest 8.3.3
-- Ruff 0.7.3
+- Ansible 2.18.3
+- PyTest 8.3.5
+- Ruff 0.9.10
