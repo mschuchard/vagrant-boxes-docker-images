@@ -5,10 +5,10 @@ A simple image based from the official Alpine Go image that additionally contain
 # Versions
 
 - Go 1.23
-- Terraform 1.9.8
-- github.com/hashicorp/terraform-plugin-framework v1.13.0
-- github.com/hashicorp/terraform-plugin-framework-validators v0.16.0
-- github.com/hashicorp/terraform-plugin-go v0.25.0
+- Terraform 1.10.5
+- github.com/hashicorp/terraform-plugin-framework v1.14.1
+- github.com/hashicorp/terraform-plugin-framework-validators v0.18.0
+- github.com/hashicorp/terraform-plugin-go v0.26.0
 - github.com/hashicorp/terraform-plugin-log v0.9.0
-- github.com/hashicorp/terraform-plugin-testing v1.11.0
-- github.com/bflad/tfproviderlint v0.30.0
+- github.com/hashicorp/terraform-plugin-testing v1.12.0
+- github.com/bflad/tfproviderlint v0.31.0
