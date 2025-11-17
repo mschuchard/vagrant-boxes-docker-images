@@ -1,5 +1,5 @@
 FROM golang:1.24-alpine
-ARG VERSION=1.11.4
+ARG VERSION=1.12.2
 COPY go.mod .
 RUN go mod download && \
     go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest && \
