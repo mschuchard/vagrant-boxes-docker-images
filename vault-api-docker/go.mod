@@ -1,10 +1,11 @@
 module github.com/mschuchard/vault-api
 
-go 1.24
+go 1.25
 
 require (
 	github.com/hashicorp/vault/api v1.22.0
 	github.com/hashicorp/vault/api/auth/aws v0.11.0
+	github.com/hashicorp/vault/api/auth/kubernetes v0.10.0
 )
 
 require (
