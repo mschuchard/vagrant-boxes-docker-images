@@ -4,7 +4,7 @@ This image of [Rapid Vaults](https://github.com/mschuchard/rapid-vaults) is base
 
 This image does not contain optional dependencies such as gRPC. If you need these for your environment, then it is recommended to create a new image from this image, and to install those additional optional dependencies with `apk` and `gem`.
 
-This image is meant to serve as a portable encryption and decryption container in your environment. If you want to use this in your personal environment, then it would be easiest to bind volume mount the target directory to the `/crypt` directory:
+This image is meant to serve as a portable encryption and decryption container in your environment. If you want to use this in your personal environment, then it would be easiest to bind volume mount the target directory to a `/crypt` directory:
 
 ```
 # example generate crypt key and nonce in current working directory
