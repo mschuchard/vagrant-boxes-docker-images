@@ -1,5 +1,5 @@
 FROM golang:1.25-alpine
-ARG VERSION=1.20.4
+ARG VERSION=1.21.4
 COPY go.mod .
 RUN go mod download && \
     apk add --no-cache --update curl unzip && \
