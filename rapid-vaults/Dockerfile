@@ -1,5 +1,5 @@
-FROM ruby:3.3-alpine
-ARG VERSION=1.3.1
+FROM ruby:3.4-alpine
+ARG VERSION=1.3.2
 RUN apk add --no-cache --update build-base && \
     gem install --no-document -v "$VERSION" rapid-vaults && \
     apk del build-base

@@ -1,3 +1,3 @@
-ARG PACKER_VERSION='1.14'
+ARG PACKER_VERSION='1.15'
 FROM hashicorp/packer:${PACKER_VERSION}
 RUN apk add --no-cache --update ansible
