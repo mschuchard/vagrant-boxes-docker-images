@@ -1,4 +1,4 @@
-FROM golang:1.25-alpine
+FROM golang:1.26-alpine
 ARG VERSION=1.21.4
 COPY go.mod .
 RUN go mod download && \

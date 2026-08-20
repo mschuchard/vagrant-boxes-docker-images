@@ -1,6 +1,6 @@
 module github.com/mschuchard/terraform-plugin
 
-go 1.25
+go 1.26
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
